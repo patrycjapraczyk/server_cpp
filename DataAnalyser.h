@@ -12,9 +12,9 @@
 
 #define AVERAGE_DATA_LENGTH 3000
 #define PACKET_LEN_START_INDEX 2
-#define PACKET_LEN_END_INDEX 5
+#define PACKET_LEN_LENGTH 4
 #define DATA_COUNTER_START_INDEX 6
-#define DATA_COUNTER_END_INDEX 13
+#define DATA_COUNTER_LENGTH 4
 #define DATA_BLOCK_LEN_HEX 4
 #define DATA_PARAMS_LEN 14
 #define DATA_PAYLOAD_START_INDEX 14
@@ -30,8 +30,6 @@ using namespace std;
 class DataAnalyser {
 
 private:
-    DataAnalyser(SafeQueue &data_queue);
-
     bool stopped;
     string currDataStr;
     ErrorLogger *logger;
@@ -42,11 +40,11 @@ private:
     vector<T> removeEveryOther(vector<T> old_arr);
 
 public:
-    DataAnalyser();
+    DataAnalyser(SafeQueue *data_queue);
     ~DataAnalyser();
     void analyseDataPayload();
     bool checkDataIndex();
-    bool operator() (void);
+    void operator() (void);
 };
 
 

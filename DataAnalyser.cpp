@@ -6,10 +6,10 @@
 
 using namespace std;
 
-DataAnalyser::DataAnalyser(SafeQueue &data_queue)
-: q(&data_queue)
+DataAnalyser::DataAnalyser(SafeQueue *data_queue)
 {
     this->dataStorage = new DataStorage();
+    this->q = data_queue;
     this->currDataStr = "";
     this->stopped = false;
     this->logger = new ErrorLogger();
@@ -18,8 +18,8 @@ DataAnalyser::DataAnalyser(SafeQueue &data_queue)
 
 DataAnalyser::~DataAnalyser()
 {
-    delete &(this->dataStorage);
-    delete &(this->logger);
+    //delete &(this->dataStorage);
+   // delete &(this->logger);
 }
 
 /*
@@ -29,7 +29,7 @@ DataAnalyser::~DataAnalyser()
 	-- PACKET_LEN - data packet length- header + payload
 	-- DATA_CNT - data counter
 */
-bool DataAnalyser::operator() (void)
+void DataAnalyser::operator() (void)
 {
     //look for start code initially
     int startIndex = this->currDataStr.find(START_CODE);
@@ -50,43 +50,49 @@ bool DataAnalyser::operator() (void)
         }
 
         // try to find end code if there is data that has not been finished
-        Data currDataItem = this->dataStorage->currData;
+        Data *currDataItem = &this->dataStorage->currData;
 
-        if (!currDataItem.dataPayload.empty()) {
+        if (!currDataItem->dataPayload.empty()) {
             this->findEndIndex();
             continue;
         }
+        try
+        {
+            // NEW DATA PIECE
+            string expectedStartEndCode = this->currDataStr.substr(0, START_END_CODE_LENGTH);
+            // if start index was not found
+            if (expectedStartEndCode != START_CODE) {
+                this->logger->logError("MISSING START CODE data_str: " + this->currDataStr);
+            }
 
-        // NEW DATA PIECE
-        string expectedStartEndCode = this->currDataStr.substr(0, START_END_CODE_LENGTH);
-        // if start index was not found
-        if (expectedStartEndCode != START_CODE) {
-            this->logger->logError("MISSING START CODE data_str: " + this->currDataStr);
+            if (this->currDataStr.length() < DATA_PAYLOAD_START_INDEX) {
+                continue;
+            }
+
+            // extract buffer length
+            string s = this->currDataStr.substr(PACKET_LEN_START_INDEX, PACKET_LEN_LENGTH);
+            currDataItem->buffLen = s;
+            int intLen = Calculator::getInt(currDataItem->buffLen);
+
+            //number of hex digits
+            currDataItem->lenOfHex = intLen * 2;
+
+            //extract data counter
+            string dataIndex = this->currDataStr.substr(DATA_COUNTER_START_INDEX, DATA_COUNTER_LENGTH);
+
+            currDataItem->dataIndex = Calculator::getInt(dataIndex);
+            currDataItem->dataIndexHex = dataIndex;
+
+            // remove all all data that has been analysed and saved already
+            this->currDataStr = this->currDataStr.substr(DATA_PAYLOAD_START_INDEX);
+
+            this->findEndIndex();
         }
-
-        if (this->currDataStr.length() < DATA_PAYLOAD_START_INDEX) {
-            continue;
+        catch (std::exception const &exc)
+        {
+            std::cerr << "Exception caught " << exc.what() << "\n";
         }
-
-        // extract buffer length
-        currDataItem.buffLen = this->currDataStr.substr(PACKET_LEN_START_INDEX, PACKET_LEN_END_INDEX + 1);
-        int intLen = Calculator::getInt(currDataItem.buffLen);
-
-        //number of hex digits
-        currDataItem.lenOfHex = intLen * 2;
-
-        //extract data counter
-        string dataIndex = this->currDataStr.substr(DATA_COUNTER_START_INDEX, DATA_COUNTER_END_INDEX + 1);
-
-        currDataItem.dataIndex = Calculator::getInt(dataIndex);
-        currDataItem.dataIndexHex = dataIndex;
-
-        // remove all all data that has been analysed and saved already
-        this->currDataStr = this->currDataStr.substr(DATA_PAYLOAD_START_INDEX);
-
-        this->findEndIndex();
     }
-    return true;
 }
 
 bool DataAnalyser::findEndIndex()

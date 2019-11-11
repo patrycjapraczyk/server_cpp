@@ -20,16 +20,16 @@ public:
 
     // pop an element and return a copy. Block if queue empty.
     //T pop();
-    int pop();
+    string pop();
 
     //  push an element to the back of the queue.
     //void push(T& item);
-    void push(int& item);
+    void push(string& item);
     bool empty();
 
 private:
     //std::queue<T> queue_;
-    std::queue<int> queue_;
+    std::queue<string> queue_;
     std::mutex mutex_;
     std::condition_variable cond_;
 };

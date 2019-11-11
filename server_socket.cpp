@@ -9,10 +9,15 @@
 #include <arpa/inet.h>
 #include <zconf.h>
 #include <iostream>
+#include <sstream>
+#include <thread>
+
 using namespace std;
 
 #include "server_socket.h"
+#include "DataAnalyser.h"
 #include "SafeQueue.h"
+#include "Calculator.h"
 
 #define PORT 7772
 
@@ -30,9 +35,14 @@ int Server_socket::create_socket() {
     return 0;
 }
 
+/*
+ * Bind an IP address and port to the socket
+ * */
 int Server_socket::bind_socket() {
     struct sockaddr_in address;
+    //indicate socket address family- IPv4
     address.sin_family = AF_INET;
+    //convert IP address to a binary format
     address.sin_port = htons(PORT);
     inet_pton(AF_INET, "192.168.1.1", &(address.sin_addr.s_addr));
 
@@ -45,6 +55,11 @@ int Server_socket::bind_socket() {
     return 0;
 }
 
+/*
+ * Puts the server socket into the listening state,
+ * accepts the incoming connections and
+ * starts a thread for data analysis
+ * */
 int Server_socket::listen_accept() {
     cout << "listening: " << endl;
     if (listen(this->server_socket, 1) < 0)
@@ -56,22 +71,41 @@ int Server_socket::listen_accept() {
     socklen_t client_addr_len = sizeof(client_addr);  // length of the address
     cout << "accepting: ";
     if((this->new_socket = accept(this->server_socket, &client_addr,
-                             &client_addr_len)) < 0)
+                             &client_addr_len)) > 0)
     {
-        perror("accept");
-        exit(EXIT_FAILURE);
+        auto data_reader = [](int *new_socket, SafeQueue *data_queue) {
+            cout << "Receieved this: ";
+
+            while (true) {
+                try
+                {
+                    // do stuff
+                    char buffer[1024] = {0};
+                    int valread = read(*new_socket, buffer, 512);
+
+                    //prepare data packet
+                    string data_read = "";
+
+                    //convert a data packet into a string of hex for the analysis purposes
+                    for (int i = 0; i < valread; i++) {
+                        data_read += Calculator::getHex(int(buffer[i]) & 0xFF);
+                    }
+                    cout << data_read << endl;
+                    data_queue->push(data_read);
+                }
+                catch (std::exception const &exc) {
+                    std::cerr << "Exception caught " << exc.what() << "\n";
+                }
+            }
+        };
+        //start a thead for analysing data
+        DataAnalyser *data_analyser = new DataAnalyser(data_queue);
+        thread analyse_data_handler(*data_analyser);
+        //start a thread for reading incoming data from the client socket
+        thread read_data_handler(data_reader, &this->new_socket, this->data_queue);
+        read_data_handler.join();
     }
 
-    cout << "Receieved this: ";
-    while(true){
-        int buffer[1024] = {0};
-        int valread = read( new_socket , buffer, 512);
-        for(int i = 0; i < sizeof(buffer)/sizeof(buffer[0]); i++){
-            cout << buffer[i];
-        }
-        cout << endl;
-    }
-    cout << "Received some stuff\n";
     return 0;
 }
 
@@ -81,4 +115,5 @@ Server_socket::Server_socket() {
     this->bind_socket();
     this->listen_accept();
 }
+
 

@@ -8,13 +8,16 @@
 #include <string>
 #include <vector>
 
+#define HEX_BASE 16
+
 using namespace std;
 
 class Calculator {
 public:
     static int getInt(string num_str);
     static vector<int> getNumberSequence(int numSeqLen);
-
+    static string getBinary(int num);
+    static string getHex(int num);
 };
 
 

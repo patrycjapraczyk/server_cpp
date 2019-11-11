@@ -6,6 +6,7 @@
 #define SERVER_SERVER_SOCKET_H
 
 #include "SafeQueue.h"
+#include "DataAnalyser.h"
 
 class Server_socket {
 
@@ -13,14 +14,14 @@ private:
     int server_socket;
     int new_socket;
     SafeQueue *data_queue;
-
-public:
-    Server_socket();
-    Server_socket(SafeQueue &data_queue);
-    ~Server_socket();
     int create_socket();
     int bind_socket();
     int listen_accept();
+
+
+public:
+    Server_socket();
+    ~Server_socket();
 };
 
 
