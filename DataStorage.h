@@ -5,6 +5,8 @@
 #ifndef SERVER_DATASTORAGE_H
 #define SERVER_DATASTORAGE_H
 
+#define MAX_SIZE 20
+
 #include "Data.h"
 #include <vector>
 #include <iostream>
@@ -15,9 +17,9 @@ class DataStorage
 public:
     DataStorage();
     ~DataStorage();
-    Data currData;
+    Data *currData;
     void saveCurrentData();
-    std::vector<Data> *dataArr;
+    vector<Data> dataArr;
 };
 
 

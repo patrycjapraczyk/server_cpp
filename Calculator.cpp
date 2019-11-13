@@ -10,12 +10,10 @@ int Calculator::getInt(string num_str) {
     return stoi(num_str, 0, HEX_BASE);
 }
 
-vector<int> Calculator::getNumberSequence(int numSeqLen) {
-    vector<int> numSeq;
+void Calculator::getNumberSequence(int numSeqLen, vector<int> *numSeq) {
     for(int i = 0; i < numSeqLen; i++){
-        numSeq.push_back(i);
+        numSeq->push_back(i);
     }
-    return numSeq;
 }
 
 string Calculator::getBinary(int num) {
@@ -36,4 +34,15 @@ string Calculator::getHex(int num) {
     if(result.length() < 2)
         result = "0" + result;
     return result;
+}
+
+bool Calculator::checkVectorEquality(vector<int> *v1, vector<int> *v2) {
+    if(v1->size() != v2->size())
+        return false;
+
+    for(int i = 0; i < v1->size(); i++){
+        if(v1->at(i) != v2->at(i))
+            return false;
+    }
+    return true;
 }

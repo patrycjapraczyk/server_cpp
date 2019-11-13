@@ -10,6 +10,9 @@ using namespace std;
 
 ErrorLogger::ErrorLogger()
 {
+    ofstream ofile;
+    ofile.open("errors.txt");
+    this->errorCounter = 1;
 }
 
 
@@ -20,20 +23,23 @@ ErrorLogger::~ErrorLogger()
 void ErrorLogger::logError(string message)
 {
     ofstream ofile;
-    ofile.open("errors.txt", ios::ate);
+    ofile.open("errors.txt", std::ios_base::app);
     if (ofile.is_open())
     {
-        ofile << errorCounter << ". " << message << " " << this->getTime() << endl;
+        ofile << errorCounter << ". " << message << " time: " << ctime(this->getTime());
         ofile.close();
     }
     else
     {
         cout << "Couldn't open the file" << endl;
     }
+    errorCounter++;
 }
 
-time_t ErrorLogger::getTime()
+time_t* ErrorLogger::getTime()
 {
-    return time(0);
+    auto time = chrono::system_clock::now();
+    time_t normal_format  = chrono::system_clock::to_time_t(time);
+    return &normal_format;
 }
 

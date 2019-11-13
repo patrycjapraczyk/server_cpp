@@ -17,6 +17,7 @@ private:
     int create_socket();
     int bind_socket();
     int listen_accept();
+    void start_threads(int *new_socket, SafeQueue *data_queue);
 
 
 public:

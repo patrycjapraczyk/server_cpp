@@ -16,7 +16,7 @@ public:
     ErrorLogger();
     ~ErrorLogger();
     void logError(string message);
-    time_t getTime();
+    time_t* getTime();
 
 private:
     int errorCounter;

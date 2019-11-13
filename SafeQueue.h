@@ -30,6 +30,7 @@ public:
 private:
     //std::queue<T> queue_;
     std::queue<string> queue_;
+
     std::mutex mutex_;
     std::condition_variable cond_;
 };
