@@ -16,8 +16,6 @@ DataAnalyser::DataAnalyser(SafeQueue *data_queue) {
 
 
 DataAnalyser::~DataAnalyser() {
-    //delete &(this->dataStorage);
-    // delete &(this->logger);
 }
 
 /*
@@ -57,7 +55,7 @@ void DataAnalyser::operator()(void) {
         string expectedStartEndCode = this->currDataStr.substr(0, START_END_CODE_LENGTH);
         // if start index was not found
         if (expectedStartEndCode != START_CODE) {
-            this->logger->logError("MISSING START CODE data_str: " + this->currDataStr);
+            this->logger->logError("MISSING START CODE data_str: " + this->currDataStr, this->dataStorage->getDataCounter());
         }
 
         if (this->currDataStr.length() < DATA_PAYLOAD_START_INDEX) {
@@ -121,7 +119,7 @@ bool DataAnalyser::findEndIndex() {
         } else {
             //can't find the end code within data
             this->logger->logError("MISSING END_CODE, expected_end_code: " + expectedEndCode + " end_code index: " +
-                                   to_string(endCodeIndex) + " data_str: " + this->currDataStr);
+                                   to_string(endCodeIndex) + " data_str: " + this->currDataStr,  this->dataStorage->getDataCounter());
         }
     }
     return true;
@@ -137,7 +135,6 @@ void DataAnalyser::analyseDataPayload() {
         string dataChunk = dataPayload.substr(i, DATA_BLOCK_LEN_HEX);
         indexList.push_back(dataChunk);
     }
-
 
     indexList = this->removeEveryOther(indexList);
 
@@ -164,7 +161,7 @@ void DataAnalyser::analyseDataPayload() {
     Calculator::getNumberSequence(numSeqLen, &numSeq);
 
     if (!Calculator::checkVectorEquality(&indexListInts, &numSeq)) {
-        this->logger->logError("Indices in the list were not sorted! ");
+        this->logger->logError("Indices in the list were not sorted! ",this->dataStorage->getDataCounter());
     }
 }
 
@@ -183,14 +180,14 @@ bool DataAnalyser::checkDataIndex() {
             this->logger->logError(
                     "Unexpected data index! Prev index: " + to_string(prevIndex) + " " + prevDataItem.dataIndexHex +
                     " curr data: " +
-                    to_string(currDataItem->dataIndex) + " " + currDataItem->dataIndexHex);
+                    to_string(currDataItem->dataIndex) + " " + currDataItem->dataIndexHex,  this->dataStorage->getDataCounter());
         }
     } else {
         if (currIndex == 0) {
             this->logger->logError(
                     "Unexpected data index! Prev index: " + to_string(prevIndex) + " " + prevDataItem.dataIndexHex +
                     " curr data: " +
-                    to_string(currDataItem->dataIndex) + " " + currDataItem->dataIndexHex);
+                    to_string(currDataItem->dataIndex) + " " + currDataItem->dataIndexHex,  this->dataStorage->getDataCounter());
         }
     }
     return true;

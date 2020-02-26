@@ -8,11 +8,14 @@
 #include "SafeQueue.h"
 #include "DataAnalyser.h"
 
+#define DATA_LEN 16384
+
 class Server_socket {
 
 private:
     int server_socket;
     int new_socket;
+    uint16_t data_arr[DATA_LEN];
     SafeQueue *data_queue;
     int create_socket();
     int bind_socket();

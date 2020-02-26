@@ -9,6 +9,7 @@ using namespace std;
 DataStorage::DataStorage()
 {
     this->currData = new Data();
+    this->data_counter = 0;
 }
 
 DataStorage::~DataStorage()
@@ -23,7 +24,12 @@ void DataStorage::saveCurrentData()
     (this->currData)->payloadLength = (this->currData)->dataPayload.length();
     this->dataArr.push_back(*this->currData);
     cout << this->currData->to_string() << endl;
+
+    this->data_counter++;
+    //clear current data
     this->currData = new Data();
-    int curr_size = this->dataArr.size();
-    //this->dataArr.resize(curr_size + 1);
+}
+
+long DataStorage::getDataCounter() const {
+    return data_counter;
 }

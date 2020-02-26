@@ -20,6 +20,11 @@ public:
     Data *currData;
     void saveCurrentData();
     vector<Data> dataArr;
+
+private:
+    long data_counter;
+public:
+    long getDataCounter() const;
 };
 
 

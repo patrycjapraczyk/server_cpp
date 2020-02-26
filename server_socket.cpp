@@ -9,8 +9,8 @@
 #include <arpa/inet.h>
 #include <zconf.h>
 #include <iostream>
-#include <sstream>
 #include <thread>
+#include <string.h>
 
 using namespace std;
 
@@ -20,6 +20,17 @@ using namespace std;
 #include "Calculator.h"
 
 #define PORT 7772
+
+/*
+ * generates data to be sent over a TCP socket
+ * */
+void Server_socket::generateData(void)
+{
+    for (uint16_t i = 0; i < DATA_LEN; i++)
+    {
+        this->data_arr[i] = i;
+    }
+}
 
 /*
  * Create a TCP socket of type IPv4
@@ -67,15 +78,19 @@ int Server_socket::listen_accept() {
         perror("listen");
         exit(EXIT_FAILURE);
     }
+
     struct sockaddr  client_addr;     // address of the client
     socklen_t client_addr_len = sizeof(client_addr);  // length of the address
-    cout << "accepting: ";
+
     if((this->new_socket = accept(this->server_socket, &client_addr,
-                             &client_addr_len)) > 0)
+                                    &client_addr_len)) > 0)
     {
         //client connection established
+        cout << "Connected" << endl;
         this->start_threads(&this->new_socket, this->data_queue);
+        return 0;
     }
+
 
     return 0;
 }
@@ -95,8 +110,15 @@ void Server_socket::start_threads(int *new_socket, SafeQueue *data_queue) {
         while (true) {
             try
             {
+                //send data
+                char *buffer = "aaaaaaaaaaaaaaaaaa";
+                u_int
+                int n = send(*new_socket, buffer, strlen(buffer), 0);
+                sleep(1);
+
+                //read data
                 // do stuff
-                char buffer[1024] = {0};
+                /*long buffer[1024] = {0};
                 int valread = read(*new_socket, buffer, 512);
 
                 //prepare data packet
@@ -106,7 +128,7 @@ void Server_socket::start_threads(int *new_socket, SafeQueue *data_queue) {
                 for (int i = 0; i < valread; i++) {
                     data_read += Calculator::getHex(int(buffer[i]) & 0xFF);
                 }
-                data_queue->push(data_read);
+                data_queue->push(data_read);*/
             }
             catch (std::exception const &exc) {
                 std::cerr << "Exception caught " << exc.what() << "\n";
